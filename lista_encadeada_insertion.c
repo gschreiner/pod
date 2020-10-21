@@ -11,8 +11,8 @@
 struct ItemLista {
     int valor;
     
-   struct ItemLista *next;
-   struct ItemLista *prev;
+   struct ItemLista *next; //proximo elemento
+   struct ItemLista *prev; // elemento anterior
 };
 typedef struct ItemLista ItemLista;
 
@@ -44,7 +44,7 @@ void adicionaElemento(Lista *lista, ItemLista *itemAnterior, ItemLista *elemento
         itemAnterior->next = elemento;
         elemento->prev = itemAnterior;
         elemento->next = NULL;
-        lista->tail = elemento;
+        lista->tail = elemento; //atualiza o ultimo elemento da lista
     } else{ //qualquer elemento menos o último
         itemAnterior->next = elemento;
         elemento->prev = itemAnterior;
@@ -73,7 +73,7 @@ void criaLista (Lista *lista, int size){
     srand((unsigned)time(NULL));
     for(int i = 0; i< size; i++){
         aux = (ItemLista *) malloc (sizeof(ItemLista));
-        aux->valor = rand()%MAX;
+        aux->valor = rand()%MAX; //sorteando um valor aleatório
         aux->next = NULL;
         aux->prev = NULL;
 
@@ -106,44 +106,66 @@ void imprimeLista(Lista *lista, int order){
 
 }
 
+void swap(Lista *lista, ItemLista *destino, ItemLista *elemento){
+    ItemLista *aux;
+    aux = elemento->prev;
+    
+    if (destino == NULL){ //cabeça da lista
+        aux->next = elemento->next;
+        if (aux->next != NULL)
+            aux->next->prev = aux;
+        else {
+            lista->tail = aux;
+        }
+        elemento->next = lista->head;
+        lista->head->prev = elemento;
+        elemento->prev = NULL;
+        lista->head = elemento;
+
+    } else {
+        elemento->prev = destino; // anterior do elemento é o j;
+        aux->next = elemento->next; //meu ex anterior, aponta para o meu proximo.
+        if (aux->next != NULL)
+            aux->next->prev = aux; //meu proximo, agora aponta pro meu ex anterior
+        else{ //ultimo da lista
+            lista->tail = aux;
+        }
+        destino->next->prev = elemento;
+        elemento->next = destino->next;
+        destino->next = elemento;
+    }
+}
+
 
 void insertionSort(Lista *lista){
     ItemLista *i, *j, *elemento, *aux, *aux2;
 
-
     for (i=lista->head->next; i != NULL; i = i->next){
-        printf("lista: \n");
-        imprimeLista(lista,1);
-        printf("\n-----: \n");
         for(j = i->prev; j != NULL; j = j->prev ){
-            printf("Comapra: %d %d\n", j->valor, i->valor);
-            getc(stdin);
-            if (j->valor <= i->valor){
-                printf("Quer fazer swap\n");
-                aux = i->prev; //anterior do atuals
-                i->prev = j; // anterior do elemento é o j;
-                aux->next = i->next; //meu ex anterior, aponta para o meu proximo.
-                aux->next->prev = aux; //meu proximo, agora aponta pro meu ex anterior
-                j->next->prev = i;
-                i->next = j->next;
-                j->next = i;
-                i = aux->next;
+            if (j->valor < i->valor){
+                if (j == i->prev){
+                    break;
+                }
+                aux = i->prev; //anterior do atual
+                swap (lista, j, i); //troca os dois elementos
+                i = aux;
                 break;
             }        
         }
         if (j == NULL){ //foi até a cabeça da lista
-            //aux2 = i->next;
+
             aux = i->prev;
-            aux->next = i->next;
-            aux->next->prev = aux;
-            i->next = lista->head;
-            lista->head->prev = i;
-            i->prev = NULL;
-            lista->head = i;
+            swap(lista, NULL, i);
             i = aux;
         } 
 
     }
+
+}
+
+void adicionaElementoInsertionSort(Lista *lista, ItemLista *elemento){
+    //for percorrendo a lista, de trás pra frente (tail para head), até encontrar a posição do elemento.
+        //apos encontrar a posição adiciona o elemento.
 
 }
 
@@ -156,7 +178,7 @@ int main(){
     lista->tail = NULL;
     
     
-    criaLista(lista, 5);
+    criaLista(lista, 15);
 
 
     
