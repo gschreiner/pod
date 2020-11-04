@@ -9,7 +9,7 @@ int main(){
 
     file = fopen("nomeDoArquivo.aul", "r+");
     if (file == NULL){
-        printf("Deu caca!\n");
+        printf("Deu caca! -- Veja se não esta usando o R+\n");
         return 1;
     }
 
