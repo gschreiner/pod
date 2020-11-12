@@ -54,33 +54,48 @@ int main()
    }
    fclose(arq);
 
+   printf("Escrita no arquivo principal finalizada!\n");
+
    // abre o arquivo binário para leitura e gravação
    // cria os arquivos auxiliares
-   printf("\nClassificando....");
+   printf("\nIniciando método: \n");
    time_t ini = time(NULL);
+   
    arq = fopen(nomearq, "r+b");
    aux1 = fopen(tp[0], "w+b");
    aux2 = fopen(tp[1], "w+b");
-   tRead = fread(mAg, LEN, MAXREC, arq);
-   if (ts)  mergeSort(mAg,0,tRead);
-   else sort(mAg,tRead);
+
+
+   tRead = fread(mAg, LEN, MAXREC, arq); //Leu um bloco de informações de MAXREC registros.
+   printf("-> Leu bloco de %d", tRead);
+
+   mergeSort(mAg,0,tRead); //ordenou o bloco de dados q esta na memória.
+   printf("Bloco em memoria ordenado!\n");
+   
    i = 1;
    // printf("\nBloco %d Ordenado",i);
 
-   recTempFile(aux1, aux2, mAg, tRead);
    int ind = 0;
+   printf("primeira chamada: arq %s, aux: %s", tp[ind==0 ? 0:1], tp[ind==0 ? 1:0]); 
+   recTempFile(aux1, aux2, mAg, tRead); //primeira intercalação dos dados. Entre TEMP1 e TEMP2
+   int chamada = 1;
    while (!feof(arq))
    {
-      tRead = fread(mAg,LEN,MAXREC,arq);
-      if (ts)  mergeSort(mAg,0,tRead);
+      tRead = fread(mAg,LEN,MAXREC,arq); //le os dados do arquivo original
+      
+      if (ts)  mergeSort(mAg,0,tRead); //ordena os dados na memória.
       else sort(mAg,tRead);
      // printf("\nBloco %d ordenado",++i);
+      
+      printf("%d chamada: *arq: %s, ^aux: %s",++chamada, tp[ind==0 ? 1:0], tp[ind==0 ? 0:1]); 
       recTempFile(aux2,aux1,mAg,tRead);
       fclose(aux1);
       fclose(aux2);
       aux1 = fopen(tp[ind==0 ? 1:0], "r+b");
       aux2 = fopen(tp[ind==0 ? 0:1], "w+b");
       ind = ind==0? 1:0;
+      printf("\n\n-----------------------------------------\n\n");
+      getchar();
    }
    fclose(aux1);
    fclose(aux2);
@@ -128,12 +143,15 @@ void recTempFile(FILE *arq, FILE *aux, ag *myAg, size_t tam)
 {
    int i=0;
    ag aAg;
-   fseek(aux,0,SEEK_SET);
+   fseek(aux,0,SEEK_SET); //colocando o cursor no inicio do arquivo.
+
    fread(&aAg,LEN,1,aux);
    while (!feof(aux) || i < tam)
    {
+      printf("\tvalor Lido: %d, valorBuffer: %d\n",aAg.age,myAg[i].age );
        if (i < tam && (aAg.age > myAg[i].age || feof(aux)))
        {
+         printf("\tEscreve do buffer no arq;\n");
           fwrite(&myAg[i],LEN,1,arq);
           i++;
        }
@@ -143,13 +161,17 @@ void recTempFile(FILE *arq, FILE *aux, ag *myAg, size_t tam)
            {
               fwrite(&aAg,LEN,1,arq);
               fread(&aAg,LEN,1,aux);
+              printf("\tEscreve o valor dido de aux no arq; e lê um novo: %d \n", aAg.age);
            }
            else
            {
+              
               fwrite(&myAg[i],LEN,1,arq);
               i++;
               fwrite(&aAg,LEN,1,arq);
+              printf("\tEscreve o valor do buffer (%d) no arq ; Escreve lido (%d) arq;", myAg[i].age, aAg.age);
               fread(&aAg,LEN,1,aux);
+              printf(" e lê um novo valor de aux -> %d\n", aAg.age);
            }
        }
 
